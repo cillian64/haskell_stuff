@@ -24,10 +24,10 @@ piFind' precision = piFromSum (recurse 0 1)
     where
           piFromSum sum = sqrt(6 * sum)
 
-          recurse sum level = if error < precision
-                                  then sum
-                                  else recurse newsum (level+1)
+          recurse sum level
+              | error < precision/2 = sum
+              | otherwise = recurse newsum (level+1)
               where
-                    newsum = sum + 1 / fromIntegral (level^2)
-                    error = sqrt((pi - (piFromSum sum))^2)
+                  newsum = sum + 1 / fromIntegral (level^2)
+                  error = sqrt((pi - (piFromSum sum))^2)
 
