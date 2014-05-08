@@ -3,8 +3,8 @@ qs :: (Ord a) => [a] -> [a]
 qs [] = []
 qs [i] = [i]
 qs (p:l) = (qs left) ++ p : (qs right)
-    where left = [x | x <- l, x < p]
-          right = [x | x <- l, x >= p]
+    where left = filter (<p) l
+          right = filter (>=p) l
 
 -- Uses a general pivot function which could be clever-ified
 -- Also glomps all equal-to-pivot elements at each level (middle)
@@ -12,8 +12,8 @@ qs' :: (Ord a) => [a] -> [a]
 qs' [] = []
 qs' [i] = [i]
 qs' l = (qs' left) ++ middle ++ (qs' right)
-    where left = [x | x <- l, x < p]
-          middle = [x | x <- l, x == p]
-          right = [x | x <- l, x > p]
+    where left = filter (<p) l
+          middle = filter (==p) l
+          right = filter (>p) l
           p = head l -- for now!
 
