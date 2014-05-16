@@ -3,7 +3,7 @@ mergesort [] = []
 mergesort [a] = [a]
 mergesort a = merge (mergesort left) (mergesort right)
     where
-        (left, right) = splitAt (round $ (fromIntegral $ length a)/2 ) a
+        (left, right) = splitAt (length a `quot` 2) a
        
         merge :: (Ord a) => [a] -> [a] -> [a]
         merge [] [] = []
