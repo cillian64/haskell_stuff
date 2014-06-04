@@ -1,49 +1,37 @@
--- The operating stack is a list of strings
--- Use `words' to convert an input string into a list of strings
--- and then reverse this to get the appropriate stack
+type Stack = [Double]
+type Token = String
 
 main :: IO ()
-main = do
-    inputloop []
+main = inputloop []
 
-inputloop :: [String] -> IO ()
+-- inputloop takes the current state stack, does input, and recurses.
+inputloop :: Stack -> IO ()
 inputloop stack = do
-    putStrLn $ foldl (\x y -> x ++ " " ++ y) ">" stack
+    putStrLn $ foldl (\x y -> x ++ " " ++ y) ">" (map show stack)
     inputstr <- getLine
-    let input = words inputstr
-    let new_stack = apply input stack
-    inputloop new_stack
+    if inputstr == "exit" || inputstr == "quit" then return ()
+    else -- Generate new stack and recurse:
+        inputloop $ foldl apply stack (words inputstr)
 
--- Apply takes a list of input tokens, a stack, and returns the resulting stack
-apply :: [String] -> [String] -> [String]
-apply (x:xs) stack
-    | isnum(x) = apply xs (x:stack)
-    | isop(x) = apply xs (applyop x stack)
-    | otherwise = ["invalid operator or input"]
-apply [] stack = stack
+-- apply applies a token to a stack
+apply :: Stack -> Token -> Stack
+apply stack x
+    | isnum(x) = (read x):stack -- infers the type of `read' from `stack'
+    | otherwise = applyop x stack
 
--- Applyop takes an operator string, a stack, and returns the resulting stack
-applyop :: String -> [String] -> [String]
-applyop op (x1:x2:xs)
-    | op == "+" = (show (a+b)):xs
-    | op == "-" = (show (a-b)):xs
-    | op == "*" = (show (a*b)):xs
-    | op == "/" = (show (a/b)):xs
-    | op == "clear" = []
-    | op == "sqrt" = (show $ sqrt b):x2:xs
-    where
-        a = read x2 :: Float
-        b = read x1 :: Float
-applyop op [x]
-    | op == "clear" = []
-    | op == "sqrt" = [(show $ sqrt a)]
-    | otherwise = ["error, stack underflow"]
-    where a = read x :: Float
-applyop op [] = ["error, stack underflow"]
+-- applyop applies an operator token to a stack
+applyop :: Token -> Stack -> Stack
+applyop "+" (b:a:xs) = (a+b):xs
+applyop "-" (b:a:xs) = (a-b):xs
+applyop "*" (b:a:xs) = (a*b):xs
+applyop "/" (b:a:xs) = (a/b):xs
+applyop "sqrt" (a:xs) = (sqrt a):xs
+applyop "clear" _ = []
+applyop _ xs = xs -- Fallthrough - do nothing. Includes empty stack with valid op
 
-isnum :: String -> Bool
-isnum token = (token !! 0 >= '0') && (token !! 0 <= '9')
-
-isop :: String -> Bool
-isop token = (token == "+") || (token == "-") || (token == "*") || (token == "/") || (token == "clear") || (token == "sqrt")
+-- Isnum tells us whether the token is a valid number
+isnum :: Token -> Bool
+isnum token = case reads token :: [(Double, String)] of
+    [(_, "")] -> True
+    _         -> False
 
